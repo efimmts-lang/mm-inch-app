@@ -1,155 +1,205 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MM ↔ INCH</title>77
-
-<style>
-body {
-  font-family: Arial;
-  background: #111;
-  color: white;
-  text-align: center;
-  padding: 30px;
-}
-
-input {
-  padding: 10px;
-  font-size: 18px;
-  width: 80%;
-  margin: 10px;
-}
-
-button {
-  padding: 10px 20px;
-  font-size: 18px;
-  margin: 10px;
-  cursor: pointer;
-}
-
-.result {
-  margin-top: 20px;
-  font-size: 20px;
-  white-space: pre-line;
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MM ↔ INCH</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+      text-align: center;
+      padding: 30px;
+    }
+    input {
+      padding: 10px;
+      font-size: 18px;
+      width: 85%;
+      max-width: 420px;
+      margin: 10px;
+      border-radius: 10px;
+      border: 1px solid #333;
+      background: #0d0d0d;
+      color: #fff;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      margin: 10px;
+      cursor: pointer;
+      border-radius: 10px;
+      border: 1px solid #333;
+      background: #1b1b1b;
+      color: #fff;
+    }
+    .result {
+      margin-top: 18px;
+      font-size: 20px;
+      white-space: pre-line;
+      line-height: 1.35;
+    }
+    .hint {
+      opacity: 0.75;
+      font-size: 14px;
+      margin-top: 8px;
+    }
+  </style>
 </head>
-
 <body>
 
-<h2>MM ↔ INCH 
+  <h2>MM ↔ INCH Converter</h2>
 
-<br>
+  <input id="value" placeholder='Examples: 25.4  |  1-3/8  |  3/8  |  1.25  |  2"' />
+  <br />
+  <button onclick="autoConvert()">Convert</button>
 
-<input id="value" placeholder="Enter value">
-<br>
-<div class="result" id="result"></div>
+  <div class="result" id="result"></div>
+  <div class="hint">Auto: type value → result updates. Enter also works.</div>
 
-<script>
-const INCH_IN_MM = 25.4;
-const DENOM_MAX = 64;
+  <script>
+    const INCH_IN_MM = 25.4;
+    const DENOM_MAX = 64; // up to 1/64
 
-function gcd(a,b){
-  a=Math.abs(a); b=Math.abs(b);
-  while(b){ [a,b]=[b,a%b]; }
-  return 
+    function setResult(txt) {
+      document.getElementById("result").innerText = txt;
+    }
 
-function toMixedFraction(x, denomMax = DENOM_MAX){
-  if (!isFinite(x)) return "";
-  const sign = x < 0 ? "-" : "";
-  x = Math.abs(x);
+    function gcd(a, b) {
+      a = Math.abs(a);
+      b = Math.abs(b);
+      while (b) {
+        const t = a % b;
+        a = b;
+        b = t;
+      }
+      return a || 1;
+    }
 
-  const whole = Math.floor(x);
-  const frac = x - whole;
+    function toMixedFraction(x, denomMax = DENOM_MAX) {
+      if (!isFinite(x)) return "";
+      const sign = x < 0 ? "-" : "";
+      x = Math.abs(x);
 
-  if (frac < 1e-12) return `${sign}${whole}`;
+      const whole = Math.floor(x + 1e-12);
+      const frac = x - whole;
 
-  let bestNum = 0, bestDen = 1, bestErr = Infinity;
-  for (let den = 2; den mMax; den++){
-    const num = Math.round(frac * den);
-    const err = Math.abs(frac - (num/den));
-    if (err < bestErr){ bestErr = err; bestNum = num; bestDen = den; }
-  }
+      if (frac < 1e-12) return `${sign}${whole}"`;
 
-  const g = gcd(bestNum, bestDen);
-  let num = bestNum / g;
-  let den = bestDen / g;
+      // find best numerator/denominator up to denomMax
+      let bestNum = 0, bestDen = 1, bestErr = Infinity;
 
-  let w = whole;
-  if (num === den){ w += 1; num = 0; den = 1; }
+      for (let den = 2; den <= denomMax; den++) {
+        const num = Math.round(frac * den);
+        const err = Math.abs(frac - (num / den));
+        if (err < bestErr) {
+          bestErr = err;
+          bestNum = num;
+          bestDen = den;
+        }
+      }
 
-  if (num === 0) return `${sign}${w}`;
-  if (w === 0) return `${sign}${num}/${den}`;
-  return `${sign}${w} ${num}/${den}`;
-}
+      // reduce
+      const g = gcd(bestNum, bestDen);
+      bestNum = Math.floor(bestNum / g);
+      bestDen = Math.floor(bestDen / g);
 
-// --- парсер дюймовых строк ---
-// Понимает: 1.25, 3/8, 1 3/8, 1-3/8, 2", 2 1/2",  -1-3/8
-function parseInchInput(s){
-  if (!s) return NaN;
-  s = String(s).trim().toLowerCase();
+      // carry if equals 1
+      let w = whole;
+      if (bestNum === bestDen) { w += 1; bestNum = 0; bestDen = 1; }
 
-  // убрать кавычки дюйма и лишние пробелы
-  s = s.replace(/"/g, "").replace(/\s+/g, " ");
+      if (bestNum === 0) return `${sign}${w}"`;
+      if (w === 0) return `${sign}${bestNum}/${bestDen}"`;
+      return `${sign}${w}-${bestNum}/${bestDen}"`;
+    }
 
-  // заменить дефис между целой и дробной частью на пробел: 1-3/8 -> 1 3/8
-  s = s.replace(/^(-?\d+)\s*-\s*(\d+)\s*\/\s*(\d+)$/i, "$1 $2/$3");
+    function parseInchInput(raw) {
+      // accepts: 1-3/8, 1 3/8, 3/8, 1.25, 2"
+      if (!raw) return NaN;
+      let s = raw.trim().toLowerCase();
 
-  // если просто число
-  if (/^-?\d+(\.\d+)?$/.test(s)) return parseFloat(s);
+      // remove inch marks
+      s = s.replace(/inches|inch|in/g, "");
+      s = s.replace(/"/g, "").trim();
 
-  // если чистая дробь a/b
-  if (/^-?\d+\s*\/\s*\d+$/.test(s)){
-    const neg = s.startsWith("-");
-    const parts = s.replace("-", "").split("/");
-    const a = parseInt(parts[0].trim(),10);
-    const b = parseInt(parts[1].trim(),10);
-    if (!b) return NaN;
-    return (neg ? -1 : 1) * (a / b);
-  }
+      // normalize: "1 3/8" -> "1-3/8"
+      s = s.replace(/\s+/g, " ");
+      if (/^\d+\s+\d+\/\d+$/.test(s)) {
+        s = s.replace(" ", "-");
+      }
 
-  // смешанная: w a/b
-  const m = s.match(/^(-?\d+)\s+(\d+)\s*\/\s*(\d+)$/);
-  if (m){
-    const w = parseInt(m[1],10);
-    const a = parseInt(m[2],10);
-    const b = parseInt(m[3],10);
-    if (!b) return NaN;
-    const sign = w < 0 ? -1 : 1;
-    return w + sign * (a / b);
-  }
+      // decimal
+      if (/^[+-]?\d+(\.\d+)?$/.test(s)) {
+        return parseFloat(s);
+      }
 
-  return NaN;
-}
+      // fraction only: 3/8
+      if (/^[+-]?\d+\/\d+$/.test(s)) {
+        const neg = s.startsWith("-");
+        if (neg) s = s.slice(1);
+        const [a, b] = s.split("/").map(Number);
+        if (!b) return NaN;
+        const v = a / b;
+        return neg ? -v : v;
+      }
 
-function mmToInch() {
-  let v = parseFloat(document.getElementById("value").value);
-  if (isNaN(v)) {
-    document.getElementById("result").innerText = "Enter a number in mm.";
-    return;
-  }
-  let inch = v / INCH_IN_MM;
-  let frac = toMixedFraction(inch);
-  document.getElementById("result").innerText =
-    `${v} mm = ${inch.toFixed(5)} inch\n≈ ${frac}" (up to 1/64)`;
-}
+      // mixed: 1-3/8
+      if (/^[+-]?\d+\-\d+\/\d+$/.test(s)) {
+        const neg = s.startsWith("-");
+        if (neg) s = s.slice(1);
+        const [wPart, fPart] = s.split("-");
+        const w = Number(wPart);
+        const [a, b] = fPart.split("/").map(Number);
+        if (!b) return NaN;
+        const v = w + (a / b);
+        return neg ? -v : v;
+      }
 
-function inchToMm() {
-  const raw = document.getElementById("value").value;
-  let inch = parseInchInput(raw);
+      return NaN;
+    }
 
-  if (isNaN(inch)) {
-    document.getElementById("result").innerText =
-      `Enter inches like: 1.25, 3/8, 1 3/8, 1-3/8, 2"`;
-    return;
-  }
+    function isLikelyMm(raw) {
+      // if contains fraction symbols or inch marks -> inches
+      if (/[\/"-]/.test(raw)) return false;
+      if (/\d+\s+\d+\/\d+/.test(raw)) return false;
+      return true;
+    }
 
-  let mm = inch * INCH_IN_MM;
-  document.getElementById("result").innerText =
-    `${raw} inch = ${mm.toFixed(3)} mm`;
-}
-</script>
+    function autoConvert() {
+      const raw = document.getElementById("value").value.trim();
+      if (!raw) { setResult(""); return; }
+
+      if (isLikelyMm(raw)) {
+        const mm = parseFloat(raw);
+        if (isNaN(mm)) {
+          setResult('Enter mm like: 25.4\nor inches like: 1-3/8, 3/8, 1.25, 2"');
+          return;
+        }
+        const inch = mm / INCH_IN_MM;
+        const frac = toMixedFraction(inch);
+        setResult(
+          `${mm} mm = ${inch.toFixed(5)} inch\n≈ ${frac} (up to 1/64)`
+        );
+      } else {
+        const inch = parseInchInput(raw);
+        if (isNaN(inch)) {
+          setResult('Enter inches like: 1-3/8, 1 3/8, 3/8, 1.25, 2"');
+          return;
+        }
+        const mm = inch * INCH_IN_MM;
+        setResult(`${raw} inch = ${mm.toFixed(3)} mm`);
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const inp = document.getElementById("value");
+      inp.addEventListener("input", autoConvert);
+      inp.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") autoConvert();
+      });
+    });
+  </script>
 
 </body>
 </html>
