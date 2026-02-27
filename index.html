@@ -41,23 +41,23 @@ button {
 
 <div class="result" id="result"></div>
 
-<script>
-function mmToInch() {
-  let v = parseFloat(document.getElementById("value").value);
-  if (isNaN(v)) return;
-  let inch = v / 25.4;
-  document.getElementById("result").innerText =
-    v + " mm = " + inch.toFixed(5) + " inch";
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MM ↔ INCH</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #111;
+  color: white;
+  text-align: center;
+  padding: 30px;
 }
 
-function inchToMm() {
-  let v = parseFloat(document.getElementById("value").value);
-  if (isNaN(v)) return;
-  let mm = v * 25.4;
-  document.getElementById("result").innerText =
-    v + " inch = " + mm.toFixed(3) + " mm";
-}
-</script>
-
+input {
+  padding: 10
 </body>
 </html>
