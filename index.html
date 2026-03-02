@@ -11,26 +11,30 @@
    <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
+<h1>MM ⇄ INCH Converter</h1>
 
-    <h1>MM ⇄ INCH Converter</h1>
+<div class="card">
+  <label class="label" for="value">Value</label>
+  <input type="text" id="value" placeholder='Enter value (e.g. 25.4 or 1 1/4)' autocomplete="off" />
 
-    <input type="text" id="value" placeholder="Enter value (e.g. 25.4 or 1 1/4)">
-    <br>
+  <div class="buttons">
+    <button class="btn" onclick="mmToInch()">MM → Inch</button>
+    <button class="btn" onclick="inchToMm()">Inch → MM</button>
+    <button class="btn btn-primary" onclick="autoConvert()">Auto Detect</button>
+    <button class="btn btn-ghost" onclick="clearAll()">Clear</button>
+  </div>
 
-    <button onclick="mmToInch()">MM → Inch</button>
-    <button onclick="inchToMm()">Inch → MM</button>
-    <button onclick="autoConvert()">Auto Detect</button>
+  <div class="result" id="result" aria-live="polite"></div>
+</div>
 
-    <div class="result" id="result"></div>
+<script src="./js/app.js"></script>
 
-    <!-- Подключаем JS -->
-    <script src="./js/app.js"></script>
-
-    <script>
+<script>
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./sw.js");
   }
 </script>
+    
 
 </body>
 </html>
