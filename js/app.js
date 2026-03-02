@@ -174,5 +174,32 @@ function autoConvert() {
   if (result) result.innerText = "";
 
   input?.focus();
+  window.clearAll = function () {
+  const input = document.getElementById("value");
+  const result = document.getElementById("result");
+
+  if (input) input.value = "";
+  if (result) result.textContent = "";
+
+  if (input) input.focus();
+} window.clearAll = function () {
+  const input = document.getElementById("value");
+  const result = document.getElementById("result");
+
+  if (input) input.value = "";
+  if (result) result.textContent = "";
+
+  if (input) input.focus();
+
+  window.clearAll = function () {
+  const input = document.getElementById("value");
+  const result = document.getElementById("result");
+
+  if (input) input.value = "";
+  if (result) result.textContent = "";
+
+  if (input) input.focus();
+};
+}
 }
 }
