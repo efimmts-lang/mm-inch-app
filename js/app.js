@@ -166,4 +166,13 @@ function autoConvert() {
   // грубая эвристика: >10 обычно мм, иначе дюймы
   if (num > 10) mmToInch();
   else inchToMm();
+  function clearAll() {
+  const input = document.getElementById("value");
+  const result = document.getElementById("result");
+
+  if (input) input.value = "";
+  if (result) result.innerText = "";
+
+  input?.focus();
+}
 }
